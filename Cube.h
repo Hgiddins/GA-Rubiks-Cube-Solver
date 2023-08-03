@@ -9,8 +9,11 @@
 #include <iomanip>
 #include <algorithm>
 
+class Solver;
+
 class Cube {
-private:
+public:
+    friend class Solver;
     using Face = std::array<std::array<std::string, 3>, 3>;
     std::unordered_map<std::string, Face> faces;
 
@@ -26,7 +29,7 @@ private:
     void copy_stickers(std::array<std::string, 3>& destination, const std::array<std::string, 3>& origin);
     void copy_stickers_flip(std::array<std::string, 3>& destination, const std::array<std::string, 3>& origin);
     
-public:
+
     Cube();
 
     void execute(const std::vector<std::string>& moves);

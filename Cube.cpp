@@ -122,6 +122,7 @@ const Rotation COUNTERCLOCKWISE = {0, 1};
         }
 
     fitness = misplaced_stickers;
+    std::cout<<"fitness: "<<fitness<<std::endl;
     }
 
     bool Cube::is_solved() const {
