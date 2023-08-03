@@ -86,6 +86,21 @@ const Rotation COUNTERCLOCKWISE = {0, 1};
         
     }
     
+    bool Cube::operator<(const Cube& other) const {
+        return this->fitness < other.fitness;
+    }
+
+    Cube& Cube::operator=(const Cube& other) {
+    if (this != &other) { // Check for self-assignment
+        // Copy each member from 'other' into 'this'
+        faces = other.faces;
+        moves_lookup = other.moves_lookup;
+        move_history = other.move_history;
+        fitness = other.fitness;
+        // add any other members as needed
+    }
+    return *this;
+}
 // ---------------------------------------------------------------------------
 // Core Functions
 // ---------------------------------------------------------------------------
@@ -122,7 +137,6 @@ const Rotation COUNTERCLOCKWISE = {0, 1};
         }
 
     fitness = misplaced_stickers;
-    std::cout<<"fitness: "<<fitness<<std::endl;
     }
 
     bool Cube::is_solved() const {

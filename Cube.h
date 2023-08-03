@@ -9,11 +9,10 @@
 #include <iomanip>
 #include <algorithm>
 
-class Solver;
-
 class Cube {
 public:
-    friend class Solver;
+    bool operator<(const Cube& other) const; //custom operator to compare cubes based on fitness
+    Cube& operator=(const Cube& other);
     using Face = std::array<std::array<std::string, 3>, 3>;
     std::unordered_map<std::string, Face> faces;
 

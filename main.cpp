@@ -3,6 +3,7 @@
 #include <vector>
 #include <string>
 #include <random>
+#include <ctime>
 
 const std::vector<std::string> SINGLE_MOVES = {"U", "U'", "U2", "D", "D'", "D2", 
                                                "R", "R'", "R2", "L", "L'", "L2", 
@@ -61,90 +62,160 @@ const std::vector<std::vector<std::string>> PERMUTATIONS = {
 
 class Solver {
 private:
+    int last_printed_world = -1;
     int population_size;
     int max_generations;
     int max_resets;
     int elitism_num;
-
-    // Presuming these constants are somewhere defined in your program.
-    // If not, they need definitions as well.
-    const std::vector<std::string> SINGLE_MOVES;
-    const std::vector<std::vector<std::string>> PERMUTATIONS;
-    const std::vector<std::string> FULL_ROTATIONS;
-    const std::vector<std::string> ORIENTATIONS;
     
-    std::mt19937 rng;  // Mersenne twister random engine
-    
-    void copy(Cube& cube_to, const Cube& cube_from) {
-        for (const auto& [faceName, face] : cube_from.faces) { // Assuming Cube::faces is public or Cube is a friend
-            for (int i = 0; i < 3; ++i) {
-                for (int j = 0; j < 3; ++j) {
-                    cube_to.faces[faceName][i][j] = face[i][j];
-                }
-            }
-        }
-        cube_to.move_history = cube_from.move_history; // Assuming move_history is public or Cube is a friend
-        cube_to.fitness = cube_from.fitness; // Assuming fitness is public or Cube is a friend
+    // Additional utility functions
+    Cube copyCube(const Cube& cube_from) {
+        Cube cube_to;
+        cube_to.faces = cube_from.faces;
+        cube_to.move_history = cube_from.move_history;
+        cube_to.fitness = cube_from.fitness;
+        return cube_to;
     }
 
-    std::vector<std::string> rnd_single_move() {
-        std::uniform_int_distribution<int> dist(0, SINGLE_MOVES.size() - 1);
-        return { SINGLE_MOVES[dist(rng)] };
+    std::string rnd_single_move() {
+        return SINGLE_MOVES[rand() % SINGLE_MOVES.size()];
     }
 
     std::vector<std::string> rnd_permutation() {
-        std::uniform_int_distribution<int> dist(0, PERMUTATIONS.size() - 1);
-        return PERMUTATIONS[dist(rng)];
+        return PERMUTATIONS[rand() % PERMUTATIONS.size()];
     }
 
-    std::vector<std::string> rnd_full_rotation() {
-        std::uniform_int_distribution<int> dist(0, FULL_ROTATIONS.size() - 1);
-        return { FULL_ROTATIONS[dist(rng)] };
+    std::string rnd_full_rotation() {
+        return FULL_ROTATIONS[rand() % FULL_ROTATIONS.size()];
     }
 
-    std::vector<std::string> rnd_orientation() {
-        std::uniform_int_distribution<int> dist(0, ORIENTATIONS.size() - 1);
-        return { ORIENTATIONS[dist(rng)] };
+    std::string rnd_orientation() {
+        return ORIENTATIONS[rand() % ORIENTATIONS.size()];
     }
 
 public:
     Solver(int population_size, int max_generations, int max_resets, int elitism_num)
         : population_size(population_size), max_generations(max_generations),
-          max_resets(max_resets), elitism_num(elitism_num), rng(std::random_device()()) {
-    }
+          max_resets(max_resets), elitism_num(elitism_num) {}
 
-    // You can add more public functions or integrate this into your program
+    void solve(const std::vector<std::string>& scramble, bool verbose = false) {
+        time_t start_time = time(nullptr);
+
+        if (verbose) {
+            std::cout << "Starting..." << std::endl;
+        }
+
+        for (int r = 0; r < max_resets; ++r) {
+            // Initialize population
+            std::vector<Cube> cubes;
+            for (int i = 0; i < population_size; ++i) {
+                Cube cube;
+                cube.execute(scramble);
+                cube.execute({rnd_single_move()});
+                cube.execute({rnd_single_move()});
+                cubes.push_back(cube);
+            }
+
+            for (int g = 0; g < max_generations; ++g) {
+                // Sort by fitness
+                std::sort(cubes.begin(), cubes.end());
+
+                if (verbose) {
+                    if (last_printed_world != r + 1) { // Only print when the world changes
+                        std::cout << "World: " << r+1 << std::endl;
+                        last_printed_world = r + 1;
+                    }
+                    std::cout << "\tGeneration: " << g + 1 
+                            << "\tIncorrect stickers: " << cubes[0].fitness << std::endl;
+                }
+
+
+                for (int i = 0; i < cubes.size(); ++i) {
+                    if (cubes[i].fitness == 0) {
+                        std::cout << "" << std::endl;
+                        std::cout << "====================================" << std::endl;
+                        std::cout << "SOLUTION FOUND" << std::endl;
+                        std::cout << "====================================" << std::endl;
+                        std::cout << "" << std::endl;
+                        std::cout << "World: " << r + 1 << " - Generation: " << g + 1 << std::endl;
+                        std::cout << "" << std::endl;
+                        std::cout << "Scramble: " << cubes[i].get_scramble_str() << std::endl;
+                        std::cout << "" << std::endl;
+                        std::cout << "Solution: " << cubes[i].get_algorithm_str() << std::endl;
+                        std::cout << "" << std::endl;
+                        std::cout << "Moves: " << cubes[i].get_algorithm().size() << std::endl;
+                        std::cout << "Time taken: " << difftime(time(nullptr), start_time) << " seconds" << std::endl;
+                        return;
+                    }
+
+                    if (i > elitism_num) {
+                        cubes[i] = copyCube(cubes[rand() % (elitism_num + 1)]);
+                        int evolution_type = rand() % 6;
+                        switch (evolution_type) {
+                            // Your evolution types translated to C++ switch-case
+                            // You may need to adjust as per actual behavior
+                            case 0:
+                                cubes[i].execute(rnd_permutation());
+                                break;
+                            case 1:
+                                cubes[i].execute(rnd_permutation());
+                                cubes[i].execute(rnd_permutation());
+                                break;
+                            case 2:
+                                cubes[i].execute({rnd_full_rotation()});
+                                cubes[i].execute(rnd_permutation());
+                                break;
+                            case 3:
+                                cubes[i].execute({rnd_orientation()});
+                                cubes[i].execute(rnd_permutation());
+                                break;
+                            case 4:
+                                cubes[i].execute({rnd_full_rotation()});
+                                cubes[i].execute({rnd_orientation()});
+                                cubes[i].execute(rnd_permutation());
+                                break;
+                            case 5:
+                                cubes[i].execute({rnd_orientation()});
+                                cubes[i].execute({rnd_full_rotation()});
+                                cubes[i].execute(rnd_permutation());
+                                break;
+                            default:
+                                break;
+                        }
+                    }
+                }
+                
+                }
+                if (verbose) {
+                    std::cout << "------------------------------------" << std::endl;
+                    std::cout << "Resetting the world" << std::endl;
+            }
+        }
+        std::cout << "Solution not found" << std::endl;
+        std::cout << "Time taken: " << difftime(time(nullptr), start_time) << " seconds" << std::endl;
+    }
 };
 
-
-
-
-
-
-
 int main() {
-    Cube cube;
+    srand(time(nullptr));
+    // Remove the comment when you use the desired scramble sequence
+    // std::vector<std::string> scramble = {"R'", "U'", "L2", "B2", "U2", "F", "L2", "B'", "L'", "B", "D", "R", "B", "F2", "L", "F", "R'", "B2", "F'", "L", "B'", "D", "B2", "R2", "D'", "U", "B2", "F'", "D", "R2"};
+    // std::vector<std::string> scramble = {"U2", "B'", "F", "L", "B'", "F2", "D'", "U", "B2", "R'", "U", "B'", "F", "U", "F'", "R'", "U2", "L'", "R'", "D", "F2", "R'", "F'", "D2", "L'", "R2", "B'", "D", "L", "U2"};
+    std::vector<std::string> scramble = {"B'", "R'", "U2", "B'", "F", "D2", "R2", "B", "F'", "L2", "R'", "B2", "D2", "L2", "F'", "U", "L", "B2", "D", "F", "L'", "F", "R", "B2", "D'", "U'", "B'", "L'", "B'", "F2"};
+    // std::vector<std::string> scramble = {"D'", "B2", "D2", "L2", "U'", "L", "R'", "F", "L2", "R2", "U'", "L2", "B'", "L", "D'", "B2", "R2", "B'", "R", "F", "U2", "R", "B2", "F'", "L'", "B2", "L2", "R", "F2", "L'"};
 
-    // Scramble
-    std::vector<std::string> shufflemoves = {"R'", "L", "U'", "D2", "B", "R", "F", "B2", "L", "F2", "D'", "F2", "U'", "L2", "U'", "L2", "F2", "R2", "U2", "F2", "U"};
-    cube.execute(shufflemoves);
-    
-    // Print the cube state post-scramble
-    std::cout << "\nPost-scramble state:" << std::endl;
-    std::cout << cube << std::endl;
+    int population_size = 500;
+    int max_generations = 300;
+    int max_resets = 10;
+    int elitism_num = 50;
 
-    // Print the scramble sequence 
-    std::cout << "Scramble sequence (string): " << cube.get_scramble_str() << std::endl;
-    
-    // Solution
-    std::vector<std::string> solvemoves = {"U'", "F2", "U2", "R2", "F2", "L2", "U", "L2", "U", "F2", "D", "F2", "L'", "B2", "F'", "R'", "B'", "D2", "U", "L'", "R"};
-    cube.execute(solvemoves);
-    
-    // Print the cube state post-solution
-    std::cout << "\nPost-solution state:" << std::endl;
-    std::cout << cube << std::endl;
-
-    std::cout << "Solution algorithm (string): " << cube.get_algorithm_str() << std::endl;
+    Solver solver(population_size, max_generations, max_resets, elitism_num);
+    // Uncomment the loop if you want to run the solver multiple times
+    // for (int i = 0; i < 5; ++i) {
+    //     solver.solve(scramble, false);
+    // }
+    solver.solve(scramble, true);
 
     return 0;
 }
+
