@@ -92,4 +92,4 @@ D2 B' D' L2 F' U B D U2 B2 R F2 D2 L D2 B2 R' B2 D2
 F L D' R' D R2 U' R B2 L U' L' B2 U R2 F U' B' U F' U' B U y' F' U B U' F U B' U' y z R' U L' U2 R U' L R' U L' U2 R U' L U' z F U' B' U F' U' B U U' B2 D2 L' F2 D2 B2 R' U' D L D' L2 U L' B2 R' U R B2 U' L2 z U B2 D2 R F2 D2 B2 L U x F R B L U L' U B' R' F' L' U' L U' z x' F U' B' U F' U' B U D' R' D R2 U' R B2 L U' L' B2 U R2 D L D' L2 U L' B2 R' U R B2 U' L2 F' L' B' R' U' R U' B L F R U R' U x U' B2 D2 L' F2 D2 B2 R' U' z' U B2 D2 R F2 D2 B2 L U z' L' U2 L R' F2 R z' U B2 D2 R F2 D2 B2 L U y' M2 U M2 U2 M2 U M2 D' R' D R2 U' R B2 L U' L' B2 U R2
 
 **Moves**: 298
-**Time taken**: 2.00 seconds
+**Time taken**: 2.31 seconds
