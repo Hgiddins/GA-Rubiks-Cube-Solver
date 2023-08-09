@@ -5,7 +5,7 @@ This project implements a genetic algorithm to solve a scrambled Rubik's Cube. T
 ## Features
 - **Evolutionary Mechanics**: The algorithm simulates evolution through generations of possible solutions to the scrambled state, refining solutions with each generation.
 - **Dynamic Mutation Rate**: The mutation rate is adjusted based on the progress of the solution, allowing for dynamic responses to stagnation.
-- **Multithreading**: The algorithm utilizes multiple threads to speed up the solving process, distributing the evolution and mutation tasks across different threads.
+- **Multithreading**: The algorithm utilises multiple threads to speed up the solving process, distributing the evolution and mutation tasks across different threads.
 
 ## How It Works
 
